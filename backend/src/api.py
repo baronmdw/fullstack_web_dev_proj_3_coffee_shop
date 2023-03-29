@@ -20,6 +20,9 @@ CORS(app)
 # db_drop_and_create_all()
 
 # ROUTES
+@app.route("/")
+def index():
+    return "Hello World"
 '''
 @TODO implement endpoint
     GET /drinks
