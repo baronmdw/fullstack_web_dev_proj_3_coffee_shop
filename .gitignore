@@ -2,7 +2,6 @@ venv/
 .vscode/
 __pycache__/
 test.db
-environment.ts
 environment/
 
 # OS generated files #
