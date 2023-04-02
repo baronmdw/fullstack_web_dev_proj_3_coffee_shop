@@ -69,25 +69,17 @@ def check_permissions(permission, payload):
     
 
 '''
-@Done implement verify_decode_jwt(token) method
-    @INPUTS
-        token: a json web token (string)
-
-    it should be an Auth0 token with key id (kid)
-    it should verify the token using Auth0 /.well-known/jwks.json
-    it should decode the payload from the token
-    it should validate the claims
-    return the decoded payload
-
-    !!NOTE urlopen has a common certificate error described here: https://stackoverflow.com/questions/50236117/scraping-ssl-certificate-verify-failed-error-for-http-en-wikipedia-org
+This function checks if the token that was found in the header is currently valid and decodes the content using the authentication key from Auth0
 '''
 def verify_decode_jwt(token):
     try:
+        # get token-kid of header and currently valid token-kids from Auth0
         tokenKid = jwt.get_unverified_header(token)["kid"]
         response = urlopen("https://"+AUTH0_DOMAIN+"/.well-known/jwks.json")
         responseBody = json.load(response)
         keyList = responseBody["keys"]
         authKey = None
+        # search for token-kid of header in list of valid tokens and set the authentication key accordingly
         for key in keyList:
             if key["kid"] == tokenKid:
                authKey = {
@@ -99,8 +91,10 @@ def verify_decode_jwt(token):
                }
         if authKey is None:
             raise AuthError(error={"code":"invalid header", "description": "token could not be found"}, status_code=401)
+        # decode the JWT with the authentication key and return it as payload
         payload = jwt.decode(token, key=authKey, algorithms=ALGORITHMS, audience=API_AUDIENCE, issuer="https://"+AUTH0_DOMAIN+"/")
         return payload
+    # errorhandling
     except Exception as e:
         if isinstance(e, AuthError):
             raise AuthError(e.error, e.status_code)
