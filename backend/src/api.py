@@ -57,7 +57,6 @@ def getDrinks():
 def getDrinkDetail(payload):
     try:
         drinks = Drink.query.all()
-        print(drinks)
         drinkList = [d.long() for d in drinks]
         return jsonify({
             "success": True,
@@ -121,13 +120,11 @@ def postDrinks(payload):
 def patchDrink(payload, drinkId):
     try:
         drinkToUpdate = Drink.query.filter(Drink.id==drinkId).one_or_none()
-        print(drinkToUpdate)
         if drinkToUpdate is None:
             abort(404)
         updateDrink = request.get_json()
         updateTitle = updateDrink.get("title", None)
         updateRecipe = updateDrink.get("recipe", None)
-        print("found news: ", updateTitle, updateRecipe)
         if updateTitle is not None:
             drinkToUpdate.title = updateTitle
         if updateRecipe is not None:
@@ -152,7 +149,7 @@ def patchDrink(payload, drinkId):
     
 
 '''
-@TODO implement endpoint
+@Done implement endpoint
     DELETE /drinks/<id>
         where <id> is the existing model id
         it should respond with a 404 error if <id> is not found
@@ -197,7 +194,7 @@ def unprocessable(error):
 
 
 '''
-@TODO implement error handlers using the @app.errorhandler(error) decorator
+@Done implement error handlers using the @app.errorhandler(error) decorator
     each error handler should return (with approprate messages):
              jsonify({
                     "success": False,
