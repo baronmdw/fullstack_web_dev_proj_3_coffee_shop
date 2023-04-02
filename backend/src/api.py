@@ -129,13 +129,11 @@ def patchDrink(payload, drinkId):
         updateRecipe = updateDrink.get("recipe", None)
         print("found news: ", updateTitle, updateRecipe)
         if updateTitle is not None:
-            print("new title")
             drinkToUpdate.title = updateTitle
-            print("did it")
         if updateRecipe is not None:
             if type(updateRecipe) != list:
                 updateRecipe = [updateRecipe]
-            drinkToUpdate.recipe = updateRecipe
+            drinkToUpdate.recipe = json.dumps(updateRecipe)
         drinkToUpdate.update()
         drink = drinkToUpdate.long()
         return jsonify({
@@ -144,9 +142,9 @@ def patchDrink(payload, drinkId):
         })
     except Exception as e:
         if isinstance(e, HTTPException):
-                abort(e.code)
+            abort(e.code)
         elif isinstance(e, AuthError):
-                abort(e)
+            abort(e)
         else:
             abort(422)
     
