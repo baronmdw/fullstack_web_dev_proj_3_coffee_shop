@@ -17,7 +17,8 @@ CORS(app)
 !! NOTE THIS MUST BE UNCOMMENTED ON FIRST RUN
 !! Running this funciton will add one
 '''
-# db_drop_and_create_all()
+# with app.app_context():
+#     db_drop_and_create_all()
 
 # ROUTES
 @app.route("/")
@@ -29,7 +30,7 @@ def index():
 def auth_test(payload):
     return "it worked"
 '''
-@TODO implement endpoint
+@Done implement endpoint
     GET /drinks
         it should be a public endpoint
         it should contain only the drink.short() data representation
@@ -37,6 +38,17 @@ def auth_test(payload):
         or appropriate status code indicating reason for failure
 '''
 
+@app.route("/drinks", methods=["GET"])
+def getDrinks():
+    try:
+        drinks = Drink.query.all()
+        drinkList = [d.short() for d in drinks]
+        return jsonify({
+            "success": True,
+            "drinks": drinkList
+        })
+    except:
+        abort(404)
 
 '''
 @TODO implement endpoint
