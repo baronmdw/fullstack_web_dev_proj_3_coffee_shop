@@ -22,14 +22,7 @@ with app.app_context():
     db_drop_and_create_all()
 
 # ROUTES
-@app.route("/")
-def index():
-    return "Hello World"
 
-@app.route("/authtest")
-@requires_auth("get:drinks")
-def auth_test(payload):
-    return "it worked"
 '''
 @Done implement endpoint
     GET /drinks
@@ -113,7 +106,7 @@ def postDrinks(payload):
             abort(422)
 
 '''
-@TODO implement endpoint
+@Done implement endpoint
     PATCH /drinks/<id>
         where <id> is the existing model id
         it should respond with a 404 error if <id> is not found
@@ -170,7 +163,25 @@ def patchDrink(payload, drinkId):
     returns status code 200 and json {"success": True, "delete": id} where id is the id of the deleted record
         or appropriate status code indicating reason for failure
 '''
-
+@app.route("/drinks/<int:drinkId>", methods=["DELETE"])
+@requires_auth("delete:drinks")
+def deleteDrink(payload, drinkId):
+    try:
+        drinkToDelete = Drink.query.filter(Drink.id==drinkId).one_or_none()
+        if drinkToDelete is None:
+            abort(404)
+        drinkToDelete.delete()
+        return jsonify({
+            "success": True,
+            "delete": drinkId
+        })
+    except Exception as e:
+        if isinstance(e, HTTPException):
+                abort(e.code)
+        elif isinstance(e, AuthError):
+                abort(e)
+        else:
+            abort(422)
 
 # Error Handling
 '''
