@@ -132,7 +132,7 @@ def patchDrink(payload, drinkId):
                 updateRecipe = [updateRecipe]
             drinkToUpdate.recipe = json.dumps(updateRecipe)
         drinkToUpdate.update()
-        drink = drinkToUpdate.long()
+        drink = [drinkToUpdate.long()]
         return jsonify({
             "success": True,
             "drinks": drink
