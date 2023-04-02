@@ -103,7 +103,7 @@ def verify_decode_jwt(token):
         raise AuthError(error=AuthError, status_code=401)
 
 '''
-@TODO implement @requires_auth(permission) decorator method
+@Done implement @requires_auth(permission) decorator method
     @INPUTS
         permission: string permission (i.e. 'post:drink')
 
