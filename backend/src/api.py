@@ -12,26 +12,15 @@ app = Flask(__name__)
 setup_db(app)
 CORS(app)
 
-'''
-@TODO uncomment the following line to initialize the datbase
-!! NOTE THIS WILL DROP ALL RECORDS AND START YOUR DB FROM SCRATCH
-!! NOTE THIS MUST BE UNCOMMENTED ON FIRST RUN
-!! Running this funciton will add one
-'''
+# set up database, comment out if you want to keep the entries of the database. Must be done everytime before running Postman collection
 with app.app_context():
     db_drop_and_create_all()
 
 # ROUTES
 
 '''
-@Done implement endpoint
-    GET /drinks
-        it should be a public endpoint
-        it should contain only the drink.short() data representation
-    returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
-        or appropriate status code indicating reason for failure
+This endpoint serves to get all drinks from the database, it is publically available. No further comments in working block of endpoiont necessary.
 '''
-
 @app.route("/drinks", methods=["GET"])
 def getDrinks():
     try:
@@ -41,16 +30,12 @@ def getDrinks():
             "success": True,
             "drinks": drinkList
         })
+    # errorhandling
     except:
         abort(404)
 
 '''
-@Done implement endpoint
-    GET /drinks-detail
-        it should require the 'get:drinks-detail' permission
-        it should contain the drink.long() data representation
-    returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
-        or appropriate status code indicating reason for failure
+This endpoint serves to get details to all drinks from the database, it is publically available. No further comments in working block of endpoiont necessary.
 '''
 @app.route("/drinks-detail", methods=["GET"])
 @requires_auth("get:drinks-detail")
@@ -62,6 +47,7 @@ def getDrinkDetail(payload):
             "success": True,
             "drinks": drinkList
         })
+    # errorhandling
     except Exception as e:
         if isinstance(e, HTTPException):
                 abort(e.code)
