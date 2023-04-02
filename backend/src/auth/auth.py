@@ -23,7 +23,7 @@ class AuthError(Exception):
 ## Auth Header
 
 '''
-@TODO implement get_token_auth_header() method
+@Done implement get_token_auth_header() method
     it should attempt to get the header from the request
         it should raise an AuthError if no header is present
     it should attempt to split bearer and the token
@@ -31,17 +31,18 @@ class AuthError(Exception):
     return the token part of the header
 '''
 def get_token_auth_header():
-    if "Authorization" not in request.headers:
+    try:
+        if "Authorization" not in request.headers:
+            raise AuthError(error=AuthError, status_code=401)
+        headerTokenString = request.headers["Authorization"]
+        if headerTokenString is None:
+            raise AuthError(error=AuthError, status_code=401)
+        headerTokenParts = headerTokenString.split(" ")
+        if len(headerTokenParts) != 2:
+            raise AuthError(error=AuthError, status_code=401)
+        return headerTokenParts[1]
+    except:
         raise AuthError(error=AuthError, status_code=401)
-    headerTokenString = request.headers["Authorization"]
-    if headerTokenString is None:
-        raise AuthError(error=AuthError, status_code=401)
-    headerTokenParts = headerTokenString.split(" ")
-    if len(headerTokenParts) != 2:
-        raise AuthError(error=AuthError, status_code=401)
-    return headerTokenParts[1]
-
-    raise Exception('Not Implemented')
 
 '''
 @TODO implement check_permissions(permission, payload) method
@@ -71,7 +72,26 @@ def check_permissions(permission, payload):
     !!NOTE urlopen has a common certificate error described here: https://stackoverflow.com/questions/50236117/scraping-ssl-certificate-verify-failed-error-for-http-en-wikipedia-org
 '''
 def verify_decode_jwt(token):
-    raise Exception('Not Implemented')
+    try:
+        tokenKid = jwt.get_unverified_header(token)["kid"]
+        response = urlopen("https://"+AUTH0_DOMAIN+"/.well-known/jwks.json")
+        responseBody = json.load(response)
+        keyList = responseBody["keys"]
+        for key in keyList:
+            if key["kid"] == tokenKid:
+               authKey = {
+                   "kid": key["kid"],
+                   "kty": key["kty"],
+                   "use": key["use"],
+                   "e": key["e"],
+                   "n": key["n"]
+               }
+        if authKey is None:
+            raise AuthError(error=AuthError, status_code=401)
+        payload = jwt.decode(token, key=authKey, algorithms=ALGORITHMS, audience=API_AUDIENCE, issuer="https://"+AUTH0_DOMAIN+"/")
+        return payload
+    except: 
+        raise AuthError(error=AuthError, status_code=401)
 
 '''
 @TODO implement @requires_auth(permission) decorator method
