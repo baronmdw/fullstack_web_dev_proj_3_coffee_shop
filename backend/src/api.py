@@ -25,8 +25,8 @@ def index():
     return "Hello World"
 
 @app.route("/authtest")
-@requires_auth("")
-def auth_test():
+@requires_auth("get:drinks")
+def auth_test(payload):
     return "it worked"
 '''
 @TODO implement endpoint
