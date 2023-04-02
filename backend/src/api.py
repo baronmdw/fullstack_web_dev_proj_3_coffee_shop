@@ -3,6 +3,7 @@ from flask import Flask, request, jsonify, abort
 from sqlalchemy import exc
 import json
 from flask_cors import CORS
+from werkzeug.exceptions import HTTPException
 
 from .database.models import db_drop_and_create_all, setup_db, Drink
 from .auth.auth import AuthError, requires_auth
@@ -59,7 +60,7 @@ def getDrinks():
         or appropriate status code indicating reason for failure
 '''
 @app.route("/drinks-detail", methods=["GET"])
-@requires_auth("get:drink-details")
+@requires_auth("get:drinks-detail")
 def getDrinkDetail(payload):
     try:
         drinks = Drink.query.all()

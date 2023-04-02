@@ -56,7 +56,6 @@ def get_token_auth_header():
     return true otherwise
 '''
 def check_permissions(permission, payload):
-    print(permission, payload["permissions"], permission in payload["permissions"])
     try:
         if permission == "":
             return True
