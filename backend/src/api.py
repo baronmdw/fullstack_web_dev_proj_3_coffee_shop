@@ -18,8 +18,8 @@ CORS(app)
 !! NOTE THIS MUST BE UNCOMMENTED ON FIRST RUN
 !! Running this funciton will add one
 '''
-# with app.app_context():
-#     db_drop_and_create_all()
+with app.app_context():
+    db_drop_and_create_all()
 
 # ROUTES
 @app.route("/")
@@ -52,7 +52,7 @@ def getDrinks():
         abort(404)
 
 '''
-@TODO implement endpoint
+@Done implement endpoint
     GET /drinks-detail
         it should require the 'get:drinks-detail' permission
         it should contain the drink.long() data representation
@@ -64,6 +64,7 @@ def getDrinks():
 def getDrinkDetail(payload):
     try:
         drinks = Drink.query.all()
+        print(drinks)
         drinkList = [d.long() for d in drinks]
         return jsonify({
             "success": True,
@@ -78,7 +79,7 @@ def getDrinkDetail(payload):
             abort(404)
 
 '''
-@TODO implement endpoint
+@Done implement endpoint
     POST /drinks
         it should create a new row in the drinks table
         it should require the 'post:drinks' permission
@@ -87,6 +88,29 @@ def getDrinkDetail(payload):
         or appropriate status code indicating reason for failure
 '''
 
+@app.route("/drinks", methods=["POST"])
+@requires_auth("post:drinks")
+def postDrinks(payload):
+    try: 
+        newDrink = request.get_json()
+        drinkTitle = newDrink.get("title", None)
+        drinkRecipe = newDrink.get("recipe", None)
+        if type(drinkRecipe) != list:
+             drinkRecipe = [drinkRecipe]
+        drinkToAdd = Drink(title=drinkTitle, recipe=json.dumps(drinkRecipe))
+        drinkToAdd.insert()
+        drink = drinkToAdd.long()
+        return jsonify({
+             "success": True,
+             "drinks": drink
+        })
+    except Exception as e:
+        if isinstance(e, HTTPException):
+                abort(e.code)
+        elif isinstance(e, AuthError):
+                abort(e)
+        else:
+            abort(422)
 
 '''
 @TODO implement endpoint
@@ -168,6 +192,6 @@ def unauthorized(error):
 def unauthorizedException(error):
     return jsonify({
         "success": False,
-        "error": 401,
-        "message": "Not authorized"
-    }), 401
+        "error": error.status_code,
+        "message": error.error
+    }), error.status_code

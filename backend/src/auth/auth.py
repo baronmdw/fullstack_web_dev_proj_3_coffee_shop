@@ -33,16 +33,19 @@ class AuthError(Exception):
 def get_token_auth_header():
     try:
         if "Authorization" not in request.headers:
-            raise AuthError(error=AuthError, status_code=401)
+            raise AuthError(error={"code":"invalid header", "description": "header does not contain authorization token"}, status_code=401)
         headerTokenString = request.headers["Authorization"]
         if headerTokenString is None:
-            raise AuthError(error=AuthError, status_code=401)
+            raise AuthError(error={"code":"invalid header", "description": "no headertoken string included"}, status_code=401)
         headerTokenParts = headerTokenString.split(" ")
         if len(headerTokenParts) != 2:
-            raise AuthError(error=AuthError, status_code=401)
+            raise AuthError(error={"code":"invalid header", "description": "token header contains more than two parts"}, status_code=401)
         return headerTokenParts[1]
-    except:
-        raise AuthError(error=AuthError, status_code=401)
+    except Exception as e:
+        if isinstance(e, AuthError):
+            raise AuthError(e.error, e.status_code)
+        else:
+            raise AuthError(error={"code":"invalid header", "description": "token header could not be read"}, status_code=401)
 
 '''
 @Done implement check_permissions(permission, payload) method
@@ -60,13 +63,16 @@ def check_permissions(permission, payload):
         if permission == "":
             return True
         if "permissions" not in payload.keys():
-            raise AuthError(error=AuthError, status_code=401)
+            raise AuthError(error={"error": "no permissions"}, status_code=403)
         if permission in payload["permissions"]:
             return True
         else:
-            raise AuthError(error=AuthError, status_code=401)
-    except:
-        raise AuthError(error=AuthError, status_code=401)
+            raise AuthError(error={"error": "not permitted"}, status_code=403)
+    except Exception as e:
+        if isinstance(e, AuthError):
+            raise AuthError(e.error, e.status_code)
+        else:
+            raise AuthError(error={"code":"invalid header", "description": "permission could not be checked"}, status_code=401)
     
 
 '''
@@ -88,6 +94,7 @@ def verify_decode_jwt(token):
         response = urlopen("https://"+AUTH0_DOMAIN+"/.well-known/jwks.json")
         responseBody = json.load(response)
         keyList = responseBody["keys"]
+        authKey = None
         for key in keyList:
             if key["kid"] == tokenKid:
                authKey = {
@@ -98,11 +105,14 @@ def verify_decode_jwt(token):
                    "n": key["n"]
                }
         if authKey is None:
-            raise AuthError(error=AuthError, status_code=401)
+            raise AuthError(error={"code":"invalid header", "description": "token could not be found"}, status_code=401)
         payload = jwt.decode(token, key=authKey, algorithms=ALGORITHMS, audience=API_AUDIENCE, issuer="https://"+AUTH0_DOMAIN+"/")
         return payload
-    except: 
-        raise AuthError(error=AuthError, status_code=401)
+    except Exception as e:
+        if isinstance(e, AuthError):
+            raise AuthError(e.error, e.status_code)
+        else:
+            raise AuthError(error={"code":"invalid header", "description": "code could not be verified"}, status_code=401)
 
 '''
 @Done implement @requires_auth(permission) decorator method
