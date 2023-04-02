@@ -23,6 +23,11 @@ CORS(app)
 @app.route("/")
 def index():
     return "Hello World"
+
+@app.route("/authtest")
+@requires_auth("")
+def auth_test():
+    return "it worked"
 '''
 @TODO implement endpoint
     GET /drinks
@@ -106,7 +111,7 @@ def unprocessable(error):
 '''
 
 '''
-@TODO implement error handler for 404
+@Done implement error handler for 404
     error handler should conform to general task above
 '''
 
@@ -119,11 +124,19 @@ def not_found(error):
     }), 404
 
 '''
-@TODO implement error handler for AuthError
+@Done implement error handler for AuthError
     error handler should conform to general task above
 '''
 @app.errorhandler(401)
 def unauthorized(error):
+    return jsonify({
+        "success": False,
+        "error": 401,
+        "message": "Not authorized"
+    }), 401
+
+@app.errorhandler(AuthError)
+def unauthorizedException(error):
     return jsonify({
         "success": False,
         "error": 401,
