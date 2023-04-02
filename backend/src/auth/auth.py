@@ -23,24 +23,22 @@ class AuthError(Exception):
 ## Auth Header
 
 '''
-@Done implement get_token_auth_header() method
-    it should attempt to get the header from the request
-        it should raise an AuthError if no header is present
-    it should attempt to split bearer and the token
-        it should raise an AuthError if the header is malformed
-    return the token part of the header
+This Method checks if there is an Authorization header included in the request and returns the token
 '''
 def get_token_auth_header():
     try:
+        # check for Authorization header, extract it and check against emptyness
         if "Authorization" not in request.headers:
             raise AuthError(error={"code":"invalid header", "description": "header does not contain authorization token"}, status_code=401)
         headerTokenString = request.headers["Authorization"]
         if headerTokenString is None:
             raise AuthError(error={"code":"invalid header", "description": "no headertoken string included"}, status_code=401)
+        # split non-empty Bearer token and check if it is divided into two parts -> return second part containing JWT
         headerTokenParts = headerTokenString.split(" ")
         if len(headerTokenParts) != 2:
             raise AuthError(error={"code":"invalid header", "description": "token header contains more than two parts"}, status_code=401)
         return headerTokenParts[1]
+    # errorhandling
     except Exception as e:
         if isinstance(e, AuthError):
             raise AuthError(e.error, e.status_code)
