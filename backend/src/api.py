@@ -71,31 +71,29 @@ def getDrinkDetail(payload):
             abort(404)
 
 '''
-@Done implement endpoint
-    POST /drinks
-        it should create a new row in the drinks table
-        it should require the 'post:drinks' permission
-        it should contain the drink.long() data representation
-    returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the newly created drink
-        or appropriate status code indicating reason for failure
+This endpoint serves to create a new drink, it is only accessible for roles with the post:drinks rights.
 '''
-
 @app.route("/drinks", methods=["POST"])
 @requires_auth("post:drinks")
 def postDrinks(payload):
     try: 
+        # get details of new drink from request
         newDrink = request.get_json()
         drinkTitle = newDrink.get("title", None)
         drinkRecipe = newDrink.get("recipe", None)
+        # check if recipe is only one ingredient and format it correctly
         if type(drinkRecipe) != list:
-             drinkRecipe = [drinkRecipe]
+            drinkRecipe = [drinkRecipe]
+        # create new drink item and push to database
         drinkToAdd = Drink(title=drinkTitle, recipe=json.dumps(drinkRecipe))
         drinkToAdd.insert()
+        # return newly created item
         drink = drinkToAdd.long()
         return jsonify({
              "success": True,
              "drinks": drink
         })
+    # errorhandling
     except Exception as e:
         if isinstance(e, HTTPException):
                 abort(e.code)
@@ -105,38 +103,37 @@ def postDrinks(payload):
             abort(422)
 
 '''
-@Done implement endpoint
-    PATCH /drinks/<id>
-        where <id> is the existing model id
-        it should respond with a 404 error if <id> is not found
-        it should update the corresponding row for <id>
-        it should require the 'patch:drinks' permission
-        it should contain the drink.long() data representation
-    returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the updated drink
-        or appropriate status code indicating reason for failure
+This endpoint serves to update the name, recipe or both of a given drink, it is only accessible for roles with the patch:drinks rights.
 '''
 @app.route("/drinks/<int:drinkId>", methods=["PATCH"])
 @requires_auth("patch:drinks")
 def patchDrink(payload, drinkId):
     try:
+        # find drink in database and check if it exists
         drinkToUpdate = Drink.query.filter(Drink.id==drinkId).one_or_none()
         if drinkToUpdate is None:
             abort(404)
+        # get values to update from request
         updateDrink = request.get_json()
         updateTitle = updateDrink.get("title", None)
         updateRecipe = updateDrink.get("recipe", None)
+        # check if title must be updated and update it
         if updateTitle is not None:
             drinkToUpdate.title = updateTitle
+        # check if recipe must be updated and update it
         if updateRecipe is not None:
             if type(updateRecipe) != list:
                 updateRecipe = [updateRecipe]
             drinkToUpdate.recipe = json.dumps(updateRecipe)
+        # update the database entry
         drinkToUpdate.update()
         drink = [drinkToUpdate.long()]
+        # return updated drink
         return jsonify({
             "success": True,
             "drinks": drink
         })
+    # errorhandling
     except Exception as e:
         if isinstance(e, HTTPException):
             abort(e.code)
@@ -149,27 +146,23 @@ def patchDrink(payload, drinkId):
     
 
 '''
-@Done implement endpoint
-    DELETE /drinks/<id>
-        where <id> is the existing model id
-        it should respond with a 404 error if <id> is not found
-        it should delete the corresponding row for <id>
-        it should require the 'delete:drinks' permission
-    returns status code 200 and json {"success": True, "delete": id} where id is the id of the deleted record
-        or appropriate status code indicating reason for failure
+This endpiont serves to delete a drink from the database, it is only accessible with the delete:drinks rights.
 '''
 @app.route("/drinks/<int:drinkId>", methods=["DELETE"])
 @requires_auth("delete:drinks")
 def deleteDrink(payload, drinkId):
     try:
+        # get drink from database and check if it exists
         drinkToDelete = Drink.query.filter(Drink.id==drinkId).one_or_none()
         if drinkToDelete is None:
             abort(404)
+        # delete drink and return id of deleted drink
         drinkToDelete.delete()
         return jsonify({
             "success": True,
             "delete": drinkId
         })
+    # errorhandling
     except Exception as e:
         if isinstance(e, HTTPException):
                 abort(e.code)
@@ -179,11 +172,6 @@ def deleteDrink(payload, drinkId):
             abort(422)
 
 # Error Handling
-'''
-Example error handling for unprocessable entity
-'''
-
-
 @app.errorhandler(422)
 def unprocessable(error):
     return jsonify({
@@ -191,23 +179,6 @@ def unprocessable(error):
         "error": 422,
         "message": "unprocessable"
     }), 422
-
-
-'''
-@Done implement error handlers using the @app.errorhandler(error) decorator
-    each error handler should return (with approprate messages):
-             jsonify({
-                    "success": False,
-                    "error": 404,
-                    "message": "resource not found"
-                    }), 404
-
-'''
-
-'''
-@Done implement error handler for 404
-    error handler should conform to general task above
-'''
 
 @app.errorhandler(404)
 def not_found(error):
@@ -224,10 +195,6 @@ def unauthorized(error):
         "error": 401,
         "message": "Not authorized"
     }), 401
-'''
-@Done implement error handler for AuthError
-    error handler should conform to general task above
-'''
 
 @app.errorhandler(AuthError)
 def unauthorizedException(error):
