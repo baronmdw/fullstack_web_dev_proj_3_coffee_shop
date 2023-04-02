@@ -123,7 +123,42 @@ def postDrinks(payload):
     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the updated drink
         or appropriate status code indicating reason for failure
 '''
-
+@app.route("/drinks/<int:drinkId>", methods=["PATCH"])
+@requires_auth("patch:drinks")
+def patchDrink(payload, drinkId):
+    try:
+        drinkToUpdate = Drink.query.filter(Drink.id==drinkId).one_or_none()
+        print(drinkToUpdate)
+        if drinkToUpdate is None:
+            abort(404)
+        updateDrink = request.get_json()
+        updateTitle = updateDrink.get("title", None)
+        updateRecipe = updateDrink.get("recipe", None)
+        print("found news: ", updateTitle, updateRecipe)
+        if updateTitle is not None:
+            print("new title")
+            drinkToUpdate.title = updateTitle
+            print("did it")
+        if updateRecipe is not None:
+            if type(updateRecipe) != list:
+                updateRecipe = [updateRecipe]
+            drinkToUpdate.recipe = updateRecipe
+        drinkToUpdate.update()
+        drink = drinkToUpdate.long()
+        return jsonify({
+            "success": True,
+            "drinks": drink
+        })
+    except Exception as e:
+        if isinstance(e, HTTPException):
+                abort(e.code)
+        elif isinstance(e, AuthError):
+                abort(e)
+        else:
+            abort(422)
+    
+    
+    
 
 '''
 @TODO implement endpoint
@@ -176,10 +211,6 @@ def not_found(error):
         "message": "not found"
     }), 404
 
-'''
-@Done implement error handler for AuthError
-    error handler should conform to general task above
-'''
 @app.errorhandler(401)
 def unauthorized(error):
     return jsonify({
@@ -187,6 +218,10 @@ def unauthorized(error):
         "error": 401,
         "message": "Not authorized"
     }), 401
+'''
+@Done implement error handler for AuthError
+    error handler should conform to general task above
+'''
 
 @app.errorhandler(AuthError)
 def unauthorizedException(error):
