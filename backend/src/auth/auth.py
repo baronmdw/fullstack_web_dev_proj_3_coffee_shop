@@ -46,26 +46,21 @@ def get_token_auth_header():
             raise AuthError(error={"code":"invalid header", "description": "token header could not be read"}, status_code=401)
 
 '''
-@Done implement check_permissions(permission, payload) method
-    @INPUTS
-        permission: string permission (i.e. 'post:drink')
-        payload: decoded jwt payload
-
-    it should raise an AuthError if permissions are not included in the payload
-        !!NOTE check your RBAC settings in Auth0
-    it should raise an AuthError if the requested permission string is not in the payload permissions array
-    return true otherwise
+This function checks if the permissions in the payload match to the permissions required for the endpoint.
 '''
 def check_permissions(permission, payload):
     try:
+        # check if permissions are needed and part of the payload
         if permission == "":
             return True
         if "permissions" not in payload.keys():
             raise AuthError(error={"error": "no permissions"}, status_code=403)
+        # check if permissions match in both parts
         if permission in payload["permissions"]:
             return True
         else:
             raise AuthError(error={"error": "not permitted"}, status_code=403)
+    # errorhandling
     except Exception as e:
         if isinstance(e, AuthError):
             raise AuthError(e.error, e.status_code)
