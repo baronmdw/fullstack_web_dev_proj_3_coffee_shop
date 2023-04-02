@@ -45,7 +45,7 @@ def get_token_auth_header():
         raise AuthError(error=AuthError, status_code=401)
 
 '''
-@TODO implement check_permissions(permission, payload) method
+@Done implement check_permissions(permission, payload) method
     @INPUTS
         permission: string permission (i.e. 'post:drink')
         payload: decoded jwt payload
@@ -68,7 +68,7 @@ def check_permissions(permission, payload):
     
 
 '''
-@TODO implement verify_decode_jwt(token) method
+@Done implement verify_decode_jwt(token) method
     @INPUTS
         token: a json web token (string)
 
